@@ -8,18 +8,17 @@ import "react-toastify/dist/ReactToastify.css";
 import auth from '../../Firebase/firebase.init';
 
 const Register = () => {
+
     const [showPass, setShowPass] = useState(false)
     const [success, setSuccess] = useState(false)
 
     const [errorMessage, setErrorMessage] = useState('')
 
     const navigate = useNavigate()
-
     const { createUser } = useContext(AuthContext);
-    
+
     const handleRegister = e => {
         e.preventDefault();
-        const form = e.target;
         const name = e.target.name.value;
         const photo = e.target.photo.value;
         const email = e.target.email.value;
@@ -43,6 +42,7 @@ const Register = () => {
         createUserWithEmailAndPassword(auth, email, password)
             .then(result => {
                 console.log(result.user)
+                
                 e.target.reset();
                 setTimeout(() => {
                     navigate('/');
@@ -66,6 +66,12 @@ const Register = () => {
             })
 
     }
+
+    
+
+    
+    
+    
 
 
     return (

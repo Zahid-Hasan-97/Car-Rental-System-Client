@@ -1,9 +1,12 @@
-import React, {useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import AuthContext from './AuthContext';
-import {createUserWithEmailAndPassword, onAuthStateChanged, signInWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, GoogleAuthProvider, onAuthStateChanged, signInWithEmailAndPassword, signInWithPopup, signOut } from "firebase/auth";
 import auth from '../../Firebase/firebase.init';
+import axios from 'axios';
 
-const AuthProvider = ({children}) => {
+const googleProvider = new GoogleAuthProvider();
+
+const AuthProvider = ({ children }) => {
 
     const [user, setUser] = useState(null)
     const [loading, setLoading] = useState(true)
@@ -18,21 +21,47 @@ const AuthProvider = ({children}) => {
         return signInWithEmailAndPassword(auth, email, password)
     }
 
+    const singInWithGoogle = () => {
+        setLoading(true);
+        return signInWithPopup(auth, googleProvider)
+    }
+
     const signOutUser = () => {
         setLoading(true)
         return signOut(auth);
     }
 
     useEffect(() => {
-        const unSubscribe = onAuthStateChanged(auth, currentUser => {
+        const unsubscribe = onAuthStateChanged(auth, currentUser => {
             setUser(currentUser);
-            setLoading(false)
+
+            console.log('state captured', currentUser?.email);
+
+            if (currentUser?.email) {
+                const user = { email: currentUser.email };
+
+                axios.post('http://localhost:5000/jwt', user, { withCredentials: true })
+                    .then(res => {
+                        console.log('login token', res.data);
+                        setLoading(false);
+                    })
+
+            }
+            else {
+                axios.post('http://localhost:5000/logout', {}, {
+                    withCredentials: true
+                })
+                    .then(res => {
+                        console.log('logout', res.data);
+                        setLoading(false);
+                    })
+            }
+
         })
 
         return () => {
-            unSubscribe();
+            unsubscribe();
         }
-
     }, [])
 
     const authInfo = {
@@ -40,6 +69,7 @@ const AuthProvider = ({children}) => {
         loading,
         createUser,
         signInUser,
+        singInWithGoogle,
         signOutUser
 
     }

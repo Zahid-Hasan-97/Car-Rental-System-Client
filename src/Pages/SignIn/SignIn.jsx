@@ -1,20 +1,23 @@
 import { GoogleAuthProvider, sendPasswordResetEmail, signInWithPopup } from 'firebase/auth';
-import React, {useContext, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useContext, useRef, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import AuthContext from '../../Context/AuthContext/AuthContext';
 import { toast } from 'react-toastify';
 import "react-toastify/dist/ReactToastify.css";
 import auth from '../../Firebase/firebase.init';
+import axios from 'axios';
 
 
 const SignIn = () => {
     const [success, setSuccess] = useState(false);
-    const [loginError, setLoginError] = useState('')
+    const [loginError, setLoginError] = useState('');
+
+    const location = useLocation();
+    const from = location.state || '/';
 
     const emailRef = useRef();
 
     const provider = new GoogleAuthProvider();
-    // const githubProvider = new GithubAuthProvider();
     const handleGoogleSignIn = () => {
         signInWithPopup(auth, provider)
             .then((result) => {
@@ -27,37 +30,33 @@ const SignIn = () => {
             })
     }
 
-    // const handleGithubSignIn = () => {
-    //     signInWithPopup(auth, githubProvider)
-    //         .then((result) => {
-    //             console.log(result)
-    //             navigate('/')
-    //             setUser(result.user)
-    //         })
-    //         .catch(error => {
-    //             console.log('Error', error)
-    //         })
-    // }
-
     // setSuccess(false)
     // setLoginError('')
     const navigate = useNavigate()
 
     const { signInUser } = useContext(AuthContext)
 
-    const handleLogin = e => {
+    const handleSignIn = e => {
         e.preventDefault();
         const email = e.target.email.value;
         const password = e.target.password.value;
-
         console.log(email, password)
 
         signInUser(email, password)
             .then(result => {
                 console.log(result.user);
                 e.target.reset();
+
+                const user = { email: email }
+                axios.post('http://localhost:5000/jwt', user, {
+                    withCredentials: true
+                })
+                    .then(data => {
+                        console.log(data)
+                    })
+
+                // navigate(from);
                 setTimeout(() => {
-                    navigate('/');
                 }, 1000);
                 setSuccess(true)
             })
@@ -68,21 +67,6 @@ const SignIn = () => {
             })
     }
 
-    // const handleForgetPassword = () => {
-
-    //     const email = emailRef.current.value;
-    //     if (!email) {
-    //         console.log('Provide a valid email address')
-    //     }
-    //     else {
-    //         sendPasswordResetEmail(auth, email)
-    //             .then(() => {
-    //                 alert('Password reset email sent, please check your mail')
-    //             })
-    //     }
-
-    // }
-
     return (
         <div className="hero bg-base-200 min-h-screen">
             <div className="hero-content flex-col ">
@@ -90,7 +74,7 @@ const SignIn = () => {
                     <h1 className="text-5xl font-bold animate__tada animate__animated">Login now!</h1>
                 </div>
                 <div className="card bg-base-100 w-full max-w-sm shrink-0 shadow-2xl">
-                    <form onSubmit={handleLogin} className="card-body">
+                    <form onSubmit={handleSignIn} className="card-body">
                         <div className="form-control">
                             <label className="label">
                                 <span className="label-text">Email</span>

@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const Banner = () => {
     return (
@@ -18,7 +19,7 @@ const Banner = () => {
                             Drive Your Dreams Today!
                         </h1>
                         <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full transition duration-300 transform hover:scale-105">
-                            View Available Cars
+                            <Link to='availableCars'>View Available Cars</Link>
                         </button>
                     </div>
                 </div>
